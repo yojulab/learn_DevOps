@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name cocolabhub.store www.cocolabhub.store;
+    server_name [cocolabhub.store] www.[cocolabhub.store];
 #    return 301 https://$server_name$request_uri; # Redirect all HTTP requests to HTTPS
     location / {
         proxy_pass http://localhost:8000; # Forward all requests to localhost:8000
@@ -14,10 +14,10 @@ server {
 server {
     # SSL configuration
     listen 443 ssl;
-    server_name cocolabhub.store www.cocolabhub.store;
+    server_name [cocolabhub.store] www.[cocolabhub.store];
 
-    ssl_certificate /etc/letsencrypt/live/cocolabhub.store/fullchain.pem; # Certificate path
-    ssl_certificate_key /etc/letsencrypt/live/cocolabhub.store/privkey.pem; # Key path
+    ssl_certificate /etc/letsencrypt/live/[cocolabhub.store]/fullchain.pem; # Certificate path
+    ssl_certificate_key /etc/letsencrypt/live/[cocolabhub.store]/privkey.pem; # Key path
 
     ssl_session_cache shared:SSL:1m;
     ssl_session_timeout 10m;
