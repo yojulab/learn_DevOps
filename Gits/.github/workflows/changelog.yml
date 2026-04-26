@@ -1,0 +1,57 @@
+# GitHub Actions를 이용한 변경 로그(Changelog) 자동 생성 워크플로우
+name: Generate Changelog
+
+on:
+  # master, main 브랜치에 푸시되거나 v* 형태의 태그가 푸시될 때 실행됩니다.
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    
+    # GITHUB_TOKEN에 저장소 쓰기 권한을 부여합니다. (생성된 문서를 푸시하기 위해 필요)
+    permissions:
+      contents: write
+
+    steps:
+      # 1. 저장소의 코드를 체크아웃합니다.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 모든 커밋 히스토리를 가져옵니다. (git-cliff가 전체 로그를 분석하기 위해 필요)
+          fetch-depth: 0
+
+      # 2. git-cliff를 사용하여 변경 로그를 생성합니다.
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          # 사용할 설정 파일 경로
+          config: cliff.toml
+          # 상세 로그 출력 옵션
+          args: --verbose
+        env:
+          # 결과가 저장될 파일 이름 설정
+          OUTPUT: DEVELOPMENT_DOC.md
+
+      # 3. 생성된 문서를 저장소에 커밋하고 푸시합니다.
+      - name: Commit and push changes
+        run: |
+          # Git 사용자 정보 설정 (GitHub Actions 봇 계정)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # 변경된 문서를 스테이징에 추가
+          git add DEVELOPMENT_DOC.md
+          
+          # 변경 사항이 있는 경우에만 커밋을 생성합니다.
+          # [skip ci] 태그를 포함하여 이 커밋으로 인해 다시 워크플로우가 실행되는 것을 방지합니다.
+          git commit -m "docs: update DEVELOPMENT_DOC.md [skip ci]" || echo "No changes to commit"
+          
+          # 원격 저장소에 푸시
+          git push
